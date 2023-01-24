@@ -28,12 +28,21 @@ flutter:
 
 environment:
   sdk: '>=2.17.0-0 <3.0.0'
-  flutter: ">=3.4.0-34.1.pre"
+  flutter: ">=3.3.0-0"
 
-# dependency_overrides:
-#   vector_graphics_codec:
-#     path: ../../vector_graphics/packages/vector_graphics_codec
-#   vector_graphics_compiler:
-#     path: ../../vector_graphics/packages/vector_graphics_compiler
-#   vector_graphics:
-#     path: ../../vector_graphics/packages/vector_graphics
+dependency_overrides:
+  vector_graphics:
+    git:
+      url: https://github.com/WinTicket/vector_graphics.git
+      path: packages/vector_graphics
+      ref: c1e8dd2a2e6a733ed4f503d01689c21636fc6a15
+  vector_graphics_codec:
+    git:
+      url: https://github.com/WinTicket/vector_graphics.git
+      path: packages/vector_graphics_codec
+      ref: c1e8dd2a2e6a733ed4f503d01689c21636fc6a15
+  vector_graphics_compiler:
+    git:
+      url: https://github.com/WinTicket/vector_graphics.git
+      path: packages/vector_graphics_compiler
+      ref: c1e8dd2a2e6a733ed4f503d01689c21636fc6a15
