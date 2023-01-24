@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:vector_graphics/vector_graphics_compat.dart';
-import 'package:vector_graphics_compiler/vector_graphics_compiler.dart';
+import 'package:vector_graphics_compiler/vector_graphics_compiler.dart' as vg;
 
 import 'src/cache.dart';
 import 'src/loaders.dart';
@@ -11,8 +11,6 @@ import 'src/utilities/file.dart';
 
 export 'package:vector_graphics/vector_graphics.dart'
     show BytesLoader, vg, VectorGraphicUtilities, PictureInfo;
-export 'package:vector_graphics_compiler/vector_graphics_compiler.dart'
-    show SvgTheme;
 
 export 'src/cache.dart';
 export 'src/loaders.dart';
@@ -191,7 +189,7 @@ class SvgPicture extends StatelessWidget {
           assetName,
           packageName: package,
           assetBundle: bundle,
-          theme: theme,
+          theme: theme._toVgTheme(),
         ),
         colorFilter = colorFilter ?? _getColorFilter(color, colorBlendMode),
         super(key: key);
@@ -247,7 +245,7 @@ class SvgPicture extends StatelessWidget {
     @deprecated Clip? clipBehavior,
     @deprecated bool cacheColorFilter = false,
     this.theme = const SvgTheme(),
-  })  : bytesLoader = SvgNetworkLoader(url, headers: headers, theme: theme),
+  })  : bytesLoader = SvgNetworkLoader(url, headers: headers, theme: theme._toVgTheme()),
         colorFilter = colorFilter ?? _getColorFilter(color, colorBlendMode),
         super(key: key);
 
@@ -299,7 +297,7 @@ class SvgPicture extends StatelessWidget {
     this.theme = const SvgTheme(),
     @deprecated Clip? clipBehavior,
     @deprecated bool cacheColorFilter = false,
-  })  : bytesLoader = SvgFileLoader(file, theme: theme),
+  })  : bytesLoader = SvgFileLoader(file, theme: theme._toVgTheme()),
         colorFilter = colorFilter ?? _getColorFilter(color, colorBlendMode),
         super(key: key);
 
@@ -348,7 +346,7 @@ class SvgPicture extends StatelessWidget {
     this.theme = const SvgTheme(),
     @deprecated Clip? clipBehavior,
     @deprecated bool cacheColorFilter = false,
-  })  : bytesLoader = SvgBytesLoader(bytes, theme: theme),
+  })  : bytesLoader = SvgBytesLoader(bytes, theme: theme._toVgTheme()),
         colorFilter = colorFilter ?? _getColorFilter(color, colorBlendMode),
         super(key: key);
 
@@ -397,7 +395,7 @@ class SvgPicture extends StatelessWidget {
     this.theme = const SvgTheme(),
     @deprecated Clip? clipBehavior,
     @deprecated bool cacheColorFilter = false,
-  })  : bytesLoader = SvgStringLoader(string, theme: theme),
+  })  : bytesLoader = SvgStringLoader(string, theme: theme._toVgTheme()),
         colorFilter = colorFilter ?? _getColorFilter(color, colorBlendMode),
         super(key: key);
 
@@ -492,4 +490,57 @@ class SvgPicture extends StatelessWidget {
       clipViewbox: !allowDrawingOutsideViewBox,
     );
   }
+}
+
+/// A theme used when decoding an SVG picture.
+@immutable
+class SvgTheme {
+  /// Instantiates an SVG theme with the [currentColor]
+  /// and [fontSize].
+  ///
+  /// Defaults the [fontSize] to 14.
+  const SvgTheme({
+    this.currentColor,
+    this.fontSize = 14,
+    double? xHeight,
+  }) : xHeight = xHeight ?? fontSize / 2;
+
+  /// The default color applied to SVG elements that inherit the color property.
+  /// See: https://developer.mozilla.org/en-US/docs/Web/CSS/color_value#currentcolor_keyword
+  final ui.Color? currentColor;
+
+  /// The font size used when calculating em units of SVG elements.
+  /// See: https://www.w3.org/TR/SVG11/coords.html#Units
+  final double fontSize;
+
+  /// The x-height (corpus size) of the font used when calculating ex units of SVG elements.
+  /// Defaults to [fontSize] / 2 if not provided.
+  /// See: https://www.w3.org/TR/SVG11/coords.html#Units, https://en.wikipedia.org/wiki/X-height
+  final double xHeight;
+
+  @override
+  bool operator ==(dynamic other) {
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+
+    return other is SvgTheme &&
+        currentColor == other.currentColor &&
+        fontSize == other.fontSize &&
+        xHeight == other.xHeight;
+  }
+
+  @override
+  int get hashCode => Object.hash(currentColor, fontSize, xHeight);
+
+  @override
+  String toString() =>
+      'SvgTheme(currentColor: $currentColor, fontSize: $fontSize, xHeight: $xHeight)';
+
+  vg.SvgTheme _toVgTheme() => vg.SvgTheme(
+        currentColor:
+            currentColor == null ? vg.Color(currentColor!.value) : null,
+        fontSize: fontSize,
+        xHeight: xHeight,
+      );
 }
